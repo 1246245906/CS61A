@@ -139,15 +139,15 @@ def play(strategy0, strategy1, score0=0, score1=0, dice=six_sided,
         # print(score0,score1)
         if(is_swap(score0, score1)):
             score0, score1 = score1, score0
-
-
-
-
-
+        if(say == silence):
+            continue
+        else:
+            say = say(score0, score1)
     # END PROBLEM 5
     # (note that the indentation for the problem 6 prompt (***YOUR CODE HERE***) might be misleading)
     # BEGIN PROBLEM 6
     "*** YOUR CODE HERE ***"
+
     # END PROBLEM 6
     return score0, score1
 
@@ -234,6 +234,18 @@ def announce_highest(who, previous_high=0, previous_score=0):
     assert who == 0 or who == 1, 'The who argument should indicate a player.'
     # BEGIN PROBLEM 7
     "*** YOUR CODE HERE ***"
+    def say(score0, score1):
+        if(who == 0):
+            if(score0 - previous_score > previous_high):
+                print(score0 - previous_score, "point(s)! That's the biggest gain yet for Player 0")
+                return announce_highest(0, score0 - previous_score, score0)
+            return announce_highest(0, previous_high, score0)
+        else:
+            if(score1 - previous_score > previous_high):
+                print(score1 - previous_score, "point(s)! That's the biggest gain yet for Player 1")
+                return announce_highest(1, score1 - previous_score, score1)
+            return announce_highest(1, previous_high, score1)
+    return say
     # END PROBLEM 7
 
 
@@ -273,6 +285,12 @@ def make_averaged(fn, num_samples=1000):
     """
     # BEGIN PROBLEM 8
     "*** YOUR CODE HERE ***"
+    def average(*args):
+        count = 0
+        for i in range(num_samples):
+            count += fn(*args)
+        return count/num_samples
+    return average
     # END PROBLEM 8
 
 
@@ -287,6 +305,15 @@ def max_scoring_num_rolls(dice=six_sided, num_samples=1000):
     """
     # BEGIN PROBLEM 9
     "*** YOUR CODE HERE ***"
+    average = make_averaged(roll_dice, num_samples)
+    max_num = average(1, dice)
+    max_index = 1
+    for i in range(9):
+        i_average = average(i+2, dice)
+        if(i_average > max_num):
+            max_index, max_num = i+2, i_average
+    return max_index
+
     # END PROBLEM 9
 
 
@@ -311,7 +338,7 @@ def average_win_rate(strategy, baseline=always_roll(4)):
 
 def run_experiments():
     """Run a series of strategy experiments and report results."""
-    if True:  # Change to False when done finding max_scoring_num_rolls
+    if False:  # Change to False when done finding max_scoring_num_rolls
         six_sided_max = max_scoring_num_rolls(six_sided)
         print('Max scoring num rolls for six-sided dice:', six_sided_max)
 
@@ -321,7 +348,7 @@ def run_experiments():
     if False:  # Change to True to test bacon_strategy
         print('bacon_strategy win rate:', average_win_rate(bacon_strategy))
 
-    if False:  # Change to True to test swap_strategy
+    if True:  # Change to True to test swap_strategy
         print('swap_strategy win rate:', average_win_rate(swap_strategy))
 
     if False:  # Change to True to test final_strategy
@@ -335,7 +362,9 @@ def bacon_strategy(score, opponent_score, margin=8, num_rolls=4):
     rolls NUM_ROLLS otherwise.
     """
     # BEGIN PROBLEM 10
-    return 4  # Replace this statement
+    if(free_bacon(opponent_score) >= margin):
+        return 0
+    return num_rolls
     # END PROBLEM 10
 
 
@@ -345,7 +374,18 @@ def swap_strategy(score, opponent_score, margin=8, num_rolls=4):
     non-beneficial swap. Otherwise, it rolls NUM_ROLLS.
     """
     # BEGIN PROBLEM 11
-    return 4  # Replace this statement
+    free_bacon_score = score + free_bacon(opponent_score)
+    if(is_swap(free_bacon_score, opponent_score)):
+        if(opponent_score > free_bacon_score):
+            return 0
+        if(opponent_score == free_bacon_score):
+            if(free_bacon(opponent_score) >= margin):
+                return 0
+        return num_rolls
+    else:
+        if(free_bacon(opponent_score) >= margin):
+            return 0
+        return num_rolls
     # END PROBLEM 11
 
 
